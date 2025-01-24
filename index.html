@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Eugene Wolfson Résumé – README</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="gfm.min.css" />
+  <style>body{box-sizing:border-box;width:8.5in;margin:0 auto;padding:45px}h1{text-align:center}h2{text-align:center}table,table tbody,table tr,table th,table td{background:transparent!important}table{border:none;border-collapse:collapse;width:100%;display:flex;justify-content:space-between}table thead{width:100%;border:none}table tr{display:flex;width:100%;justify-content:space-between;border:none}table th{border:none;font-weight:normal;padding:0}table th:first-child{border-right:1px solid #ddd;padding-right:1em;width:20%;min-width:20%}table th:last-child{padding-left:1em;width:80%;min-width:80%}</style><div class="markdown-body">
+  <script>                                                                        // `make` copies this into index.html
+  document.addEventListener("DOMContentLoaded", () => {                           // Entry point waits for DOM load.
+    const aboveTheFold = ((hr = document.querySelector('hr')) =>                  // An IIFE that returns a helper to
+      node => !hr || (                                                            // check that a given node precedes
+        node.compareDocumentPosition(hr) & Node.DOCUMENT_POSITION_FOLLOWING))();  // the first <hr>, if any.
+    const walker = document.createTreeWalker(                                     // Walks DOM for words above the fold:
+      document.body,                                                              // starting at document body,
+      NodeFilter.SHOW_TEXT,                                                       // only looking at text nodes that are
+      node => node.textContent.trim() && aboveTheFold(node) ?                     // non-empty & above the fold, rejecting
+        NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT                       // if they are empty/whitespace/too low.
+    );                                                                            //
+                                                                                  //
+    const textNodes = [];                                                         // Store found text nodes list,
+    while (walker.nextNode()) textNodes.push(walker.currentNode);                 // collecting the via the walker above.
+                                                                                  //
+    textNodes.forEach(node => {                                                   // Process each text node
+      const words = node.textContent.match(/\S+|\s+/g) || [];                     // splitting into words/spaces,
+      const frag = document.createDocumentFragment();                             // creating fragment for efficiency.
+                                                                                  //
+      words.forEach(word => {                                                     // Process each word.
+        if (/\s+/.test(word)) {                                                   // If whitespace,
+          frag.appendChild(document.createTextNode(word));                        // keep as plain text.
+        } else {                                                                  // If word,
+          const sp = document.createElement("span");                              // create span wrapper with
+          sp.textContent = word;                                                  // word as the content,
+          sp.dataset.rgb = "255,255,255";                                         // custom "white" RGB data (important!),
+          sp.style.cssText = "color:black;text-shadow:0 0 25px rgb(255,255,255)"; // and black text over a white shadow;
+          frag.appendChild(sp);                                                   // save this span into the fragment.
+        }                                                                         //
+      });                                                                         //
+      node.replaceWith(frag);                                                     // Replace original text with fragment.
+    });                                                                           // Now all text is in a span.
+    const spans = [...document.querySelectorAll("span")];                         // Spreads out all the created spans.
+    const nudge = (rgb, by) => {                                                  // Nudge shifts the shadow of the R,G,B
+      const channel = Math.random() * 3 | 0;                                      // picking a random color channel
+      const shift = by[Math.random() * 3 | 0];                                    //              and shift amount,
+      rgb[channel] = Math.min(Math.max(rgb[channel] + shift, 0), 255);            // but constrained to valid values only
+      return rgb;                                                                 // returning the [R,G,B] array.
+    };                                                                            // Next we set up 3 animation "phases".
+    let frame = null;                                                             // Shared reference, to stop a phase.
+    const twinkle = (shift_shade, shift_background) => {                          // This shifts shadow/background colors.
+      if (frame) cancelAnimationFrame(frame);                                     // First it stops any running phase.
+      function loop() {                                                           // Then it starts a self-repeating loop:
+        frame = requestAnimationFrame(loop);                                      // by queuing itself as the next frame.
+        const rgbs = spans.map(span =>                                            // First, Read: gather all RGB values
+          span.dataset.rgb.split(",").map(Number));                               // from each span's dataset
+        const bg = document.body.style.background.match(/\d+/g)?.map(Number)      // and get current background RGB
+          || [255,255,255];                                                       // defaulting to white if none.
+        spans.forEach((span, i) => {                                              // Then, Write: for each span
+          const nudged = nudge(rgbs[i], shift_shade);                             // calculate its new shadow color
+          span.dataset.rgb = nudged.join();                                       // save it to dataset and
+          span.style.textShadow = `0 0 25px rgb(${nudged})`;                      // apply that rgb value to shadow.
+        });                                                                       // Rs before Ws avoids layout thrashing!
+        document.body.style.background = `rgb(${                                  // Finally, update the background by
+          nudge(bg, shift_background).map(v => Math.max(190, v))})`;              // nudging it, but not so it's too dark.
+      };                                                                          // The animation loop is now declared,
+      frame = requestAnimationFrame(loop);                                        // so we can start running it.
+    };                                                                            //
+    const phase = (start, until, animate) => {                                    // Defines a phase of the sequence,
+      setTimeout(() => animate(), start);                                         // by starting the animation, and then
+      setTimeout(() => cancelAnimationFrame(frame), until);                       // using the shared frame to stop it.
+    };                                                                            //
+    setInterval(function again_again() {                                          // sequence that starts immediately:
+      phase(15*1000,   45*1000, () => twinkle([-25,0,25], [-1,1]));               // 1) @ 00s after 15s, twinkle for 30s.
+      phase(45*1000,   60*1000, () => twinkle(   [2,2,2],  [1,1]));               // 2) @ 45s for 15s fades back to white.
+      phase(60*1000,  105*1000, () => twinkle(   [0,0,0],  [0,0]));               // 3) @ 60s for 45s stays put as white.
+      return again_again;                                                         // and then restarts itself
+    }(), 105*1000);                                                               // so that it loops every 1:45 seconds.
+  });                                                                             //
+  </script>
+</head>
+<body>
+<h1 id="eugene-wolfson---machine-learning-engineer">Eugene Wolfson -
+Machine Learning Engineer</h1>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;"><strong>Contact</strong>:<br><a
+href="mailto:evulfson@gmail.com">evulfson@gmail.com</a><br>Remote
+(US-based)<br><a
+href="https://github.com/yegeniy">github.com/yegeniy</a><br><a
+href="https://yegeniy.github.io">yegeniy.github.io</a><br>781.632.3780</th>
+<th style="text-align: left;"><strong>Executive Summary</strong>:
+<code>calm + conscientious + creative = ships product</code><br>A
+Principal-level Engineer with over a decade of experience in machine
+learning, data engineering, and software engineering. Skilled in Python,
+Scala, Java, and AWS technologies. Proven expertise in making
+cross-organizational impact, building lasting data and backend systems,
+iterating on the full machine learning flywheel, and guiding teams
+through significant transitions.</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h2 id="experience">Experience</h2>
+<h3 id="software-sabbatical--gencatia-llc--2024---present">Software
+Sabbatical | Gencatia LLC | 2024 - Present</h3>
+<ul>
+<li>Working on a stealth hardware (PEF32-P4) venture at GenCatia LLC...
+wish us luck!</li>
+<li>Diving into Deep Learning: d2l.ai, semantic search (RAG), novel(la)
+generation, poetry, etc..</li>
+<li>Following a lucrative exit, took a parental leave and family
+vacations across Europe, America, and Africa.</li>
+</ul>
+<h3
+id="machine-learning-engineering--meetup-social-networking--2018---2024">Machine
+Learning Engineering | Meetup (Social Networking) | 2018 - 2024</h3>
+<ul>
+<li>Served recommendations to millions of active users through
+serverless APIs and real-time infrastructure.</li>
+<li>Developed end-to-end recommendation systems and ML models with
+Spark, Python, and Scala.</li>
+<li>Built and maintained petabyte scale data lake and pipelines using
+relevant AWS services.</li>
+<li>Led architectural, cost-cutting, cross-training, and documentation
+initiatives.</li>
+</ul>
+<h3
+id="software-engineering--mlbam-media--sports-tech--2013---2018">Software
+Engineering | MLBAM (Media &amp; Sports Tech) | 2013 - 2018</h3>
+<ul>
+<li>The multimedia streaming that became Disney+ and was used by MLB,
+HBO, ESPN, NHL, WWE, et. al.</li>
+<li>Pioneered a natural language interface platform integrating with
+mobile apps, Facebook Messenger, Slack, and Alexa. An AI Agent platform,
+but this was before LLMs were widely available.</li>
+<li>Key Encipherment System for live events using Java, AWS, DynamoDB,
+and KMS.</li>
+<li>SDLC, HLS, M3U8, and Transport Stream tooling on multimedia
+development team.</li>
+</ul>
+<h3
+id="full-stack-engineering--opensky-e-commerce-marketplace--2011---2013">Full
+Stack Engineering | OpenSky (e-Commerce Marketplace) | 2011 - 2013</h3>
+<ul>
+<li>Focused on backend systems using Java (Camel, Spring), PHP
+(Symfony2), SQL / NoSQL (MySQL, MongoDB).</li>
+<li>Managed order lifecycle, third-party integrations, and data flow
+systems.</li>
+<li>Researched organizational structures, focusing on startup
+lifecycle.</li>
+</ul>
+<div style="page-break-after: always"></div>
+
+<h2 id="education">Education</h2>
+<h3 id="brandeis-university">Brandeis University</h3>
+<ul>
+<li><strong>M.A. in Computer Science | 2011</strong>
+<ul>
+<li>Highlights: Software Engineering Incubator, Bioinformatics Term
+Paper, Trace Foundation Internship.</li>
+</ul></li>
+<li><strong>B.S. in Physics (High Honors), Computer Science, and
+Mathematics | 2010</strong>
+<ul>
+<li>Highlights: Physics Faculty Prize, Arnold Shapiro Prize in
+Mathematics, President of Physics Club</li>
+</ul></li>
+</ul>
+<h2 id="professional-philosophy">Professional Philosophy</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;"><strong>A Silver Revolver</strong></th>
+<th style="text-align: left;">I strive for a tenfold improvement in my
+teams' impact through a pragmatic combination of techniques from
+software engineering, organizational psychology, and personal
+experience.</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<p><em>"No Silver Bullet" is still true, so 10x software teams by
+loading "A Silver Revolver" with these bronze bullets:</em></p>
+<ul>
+<li>agile (lower-case a)</li>
+<li>always-be-leveling-everyone (pull requests, presentations, feedback,
+postmortems)</li>
+<li>answer engines (books -&gt; Google -&gt; StackOverflow -&gt; GPT-3
+-&gt; Phind -&gt; SolveIt)</li>
+<li>async-first || sync-fast communication (from documentation to
+pairing)</li>
+<li>literate and exploratory programming (nbdev)</li>
+<li>personalized development environment (Sublime Text + CLI)</li>
+<li>test aided development (TAD)</li>
+<li>version control systems (git)</li>
+</ul>
+<p>pithily: agile, async, git, nbdev, PRs, Sublime Text, CLI, testing,
+and SolveIt.</p>
+<div style="page-break-after: always"></div>
+
+<h2 id="skills">Skills</h2>
+<ul>
+<li><strong>Machine Learning:</strong> Accelerating the Full Machine
+Learning Flywheel (interactive training pipelines, deployment,
+inference, monitoring, experimentation, data lake, tooling, iteration,
+impact), Recommender Systems, Deep Learning, Generative AI, Transfer
+Learning, fine tuning, semantic search, embeddings,
+sentencetransformers, pytorch, prompt engineering, fastai, neural
+networks, HuggingFace, Kaggle, RAG, AI before it was cool, Natural
+Language Processing, Conversational Interfaces (wit.ai), Chatbot
+Development, real-time recommendations, Bioinformatics, large dataset
+processing, image processing</li>
+<li><strong>Software Engineering:</strong> Python, Scala, Java,
+Shell/Bash, JavaScript, PHP, Matlab, Labview, microservices
+architecture, Full-Stack Development, Java (HPPC, Spring, Mule ESB,
+Camel, HornetQ, Dagger2, Spark framework, Retrofit2, Jersey/JAX-RS,
+Jackson, Grizzly), symfony2, IntelliJ IDEA, Eclipse, Google Web Toolkit,
+Git, REST, HTTP, SOAP, XSD, Enterprise Integration Patterns, code
+generation, annotation processing, SDLC automation, technical
+documentation, Sublime Text, High-Performance and Large-Scale
+Distributed Systems</li>
+<li><strong>Cloud &amp; Infrastructure:</strong> AWS (S3, EMR, MWAA,
+Airflow, CloudWatch Logs, Metrics, Alarms, Dashboards, API Gateway,
+Route53, Lambda, ECS, EKS, DynamoDB, OpenSearch / ElasticSearch,
+Kinesis, KMS, Firehose, SQS, SNS, SageMaker, etc.), Google Cloud,
+DataProc, multi-cloud, multi-region, blue-green deployments, serverless,
+container orchestration (Docker, ECS, Kubernetes), IaC (Terraform,
+Puppet, RPMs, yum), Linux, DNS, SRE, Ops, DevOps, SysOps, MLOps</li>
+<li><strong>Data &amp; Databases:</strong> ETL, Data Lake Architecture,
+Stream Processing, Business Intelligence, Data API Development, SQL
+(MySQL, Postgres), NoSQL (MongoDB, DynamoDB, CouchBase), Data Lake,
+LakeHouse (Redshift, S3, Looker, SnowFlake, ClickHouse), Graphs,
+Statistical analysis, data science</li>
+<li><strong>agile:</strong> Keep It Small And Simple, iterative
+development, CI/CD pipelines (Jenkins, RunDeck, GitHub Actions, bash),
+MVPs / prototypes, A/B, Bayesian experimentation, OKRs, KPIs,
+production-ready, test-aided development (TDD / BDD, xUnit, JUnit,
+Mockito, Selenium), on-call, runbooks, alerting, monitoring, developer
+scripts and tooling, server-less, Clean Code, Project Management (JIRA,
+GTD, Deep Work), production, system migration, cost optimization,
+knowledge transfer, cross-team collaboration</li>
+<li><strong>Domains &amp; Misc.:</strong> Physics instrumentation,
+Mathematics, Microfluidics analysis, Laboratory automation, Teaching
+(Mathematics, Computer Science), Research (Scientific instrumentation,
+Complex fluids), community outreach, leadership, mentorship, technical
+writing (proposals, documentation, presentations)</li>
+<li><strong>Languages:</strong> English (Fluent), Russian (Fluent),
+French (Basic), Wolof (Nanga def?)</li>
+</ul>
+<hr />
+<div style="page-break-after: always"></div>
+
+<h1 id="long-form-résumé-details">Long Form Résumé Details</h1>
+<h2
+id="machine-learning-engineering-formerly-software-engineering">Machine
+Learning Engineering (formerly Software Engineering)</h2>
+<p><strong>Eugene Wolfson - (Remote) United States of
+America</strong></p>
+<p><em>I’ve been immersed in Machine Learning and Data over at Meetup
+for over half a decade. Mostly Python and Scala and AWS. Prior to that,
+I spent half a decade at MLB Advanced Media doing all sorts of backend
+software engineering in the live streaming media space. This is the
+company that became Disney+. Mostly Java and AWS with a good chunk of
+Python at the end as I transitioned into data. And before that I spent a
+couple of years at an e-commerce startup called OpenSky. Mostly doing
+backend engineering in Java and PHP and deep diving into how startups
+work. My higher education concluded with an Java software internship at
+a beautiful non-profit called Trace Foundation. I completed a Masters of
+Arts in Computer Science and a Bachelors of Science in Physics,
+Mathematics, and Computer Science over the course of half a decade at
+Brandeis.</em></p>
+<h4 id="staff-machine-learning-engineer-with-meetup">Staff Machine
+Learning Engineer with Meetup</h4>
+<p><em>2018 - 2024</em></p>
+<p>Meetup is about making Babies, Bands, and Businesses.</p>
+<h5 id="summary-of-my-experience-at-meetup">Summary of my experience at
+Meetup:</h5>
+<p>I worked on the data team, making team contributions to the Machine
+Learning Engineering, Data Engineering, and Data Science aspects of the
+team. As well as providing ad-hoc assistance to critical infrastructure
+and backend problems of the company at large.</p>
+<h5 id="introduction">Introduction:</h5>
+<p>It's been over half of a glorious decade of contributing to Meetup's
+data team. Everything from Machine Learning Engineering, to Data
+Engineering, to Data Science. A lot of Spark, AWS, Jupyter Notebooks,
+Python, Scala, experimentation, SQL analysis, and recommender systems.
+With very little focus on the Business Intelligence (Looker) reporting
+side though. My career focus here has always been on training
+ever-better machine learning models. But that's just the pearl inside
+the oyster at the bottom of the data lake. Prior to being able to model
+anything in a company as small as Meetup, we need to build, maintain,
+and operate all the systems that get us the data. And then do the same
+for all the systems that serve out the recommendations at scale. For
+context, the data team's systems are mostly devoted to generating
+recommendations and business intelligence. We also maintain a simple
+experiment assignment service called variant that all clients invoke for
+running split tests across the company. But the vast majority of the
+data team's endpoints are thin layers for serving out our
+recommendations. These are exposed as a collection of data APIs. They
+serve our recommendations out mostly over HTTP or in a few cases through
+SQS. The recommendations are generated from models, both trained/
+personalized and not. The data for these recommendations and for our
+business intelligence comes from our S3-backed data lake. The lake is
+managed by an AWS MWAA (Airflow) instance which schedules a variety of
+ETL jobs. They extract data into S3 from various sources, such as MySQL
+and transforms it using Spark (EMR). Slicing and dicing it to ultimately
+land into either RedShift for reporting / analytics or into
+S3/DynamoDB/ElasticSearch for recommendations. Depending on the many
+use-cases our clients have.</p>
+<h5 id="details-of-my-experience">Details of my experience:</h5>
+<ul>
+<li>This includes everything from client tracking, experiment design,
+S3/RedShift data lake, various approaches to ETL, Kinesis/SQS/SNS
+streaming, Airflow DAGs, and the many Spark jobs for getting this to
+work efficiently at scale.</li>
+<li>At this point, we have a data lake chock full of of rich information
+about humanity's interests to wade into. This is where Data Science and
+Machine Learning techniques are applied to figure out what we can do to
+improve the business objectives.</li>
+<li>Ultimately those processes lead to loading the results into a
+variety of databases like RedShift (for analysis) and DynamoDB or even
+Open/ ElasticSearch for request-time recommendations or SQS/SNS for
+asynchronous delivery.</li>
+<li>And finally the recommendations are served out of a dozen or two
+serverless APIs. Which do the business logic needed by each
+use-case/client. Note that not everything is serverless. A bit separate,
+but related to all this is a cluster of large stateful servers (ECS) for
+making real-time recommendations. As well a stateless one (also ECS) for
+experiment assignment and tracking.</li>
+<li>And that's just the current state of things. Not to mention the
+kaleidoscope of various infrastructure migrations and devops tooling
+innovations that are involved in modernizing a 20+ year old technology
+company's data tech stack for modern machine learning. Let's just say
+there was more than one cloud, CI/CD wasn't ever a given, and the team
+transitioned from preferring bespoke Scala tools to off-the-shelf Python
+libraries as the field matured...</li>
+<li>It's worth noting that Meetup has been a unique work opportunity
+because of the timing of my tenure. The company went through several
+concentrated "bus factor" turnover events. One was associated with a
+WeWork fire-sale, another was related to a global pandemic, and the
+current one is the outcome of an acquisition. I was uniquely lucky to be
+able to help the data team during all three of these transitions.
+Leading team-wide documentation, cross-pollination, and training
+efforts. As the team turned over with fresh (but just as lovely) faces,
+this allowed for a smooth offboarding and onboarding of everyone on the
+team. If you'll permit an analogy: done right, the Ship of Theseus can
+very much remain the same ship even after every board has been swapped
+out.</li>
+<li>Finally, while I am firmly in the data field these days, I also
+inevitably moonlight across team boundaries. Not just to make friends
+but also to solve problems on the traditional engineering side of the
+fence. Leveraging my previous career experience in web / backend /
+infrastructure / streaming engineering, I provide architectural design
+suggestions, implement cost savings, or resolve production issues for
+the engineering team at large. This is, of course, an informal, ad-hoc,
+and rewarding process.</li>
+</ul>
+<hr />
+<h4
+id="senior-software-engineer-with-mlb-advanced-media-in-nyc-ny">Senior
+Software Engineer with MLB Advanced Media in NYC, NY</h4>
+<p><em>2013 - 2018</em></p>
+<p><em>Summary</em>: Enterprise software engineering, with a focus on
+Java, multimedia, and conversational interfaces. This is the company
+that eventually became Disney+.</p>
+<ul>
+<li>Platform for natural language interfaces (a.k.a. bots)</li>
+<li>Key Encipherment System</li>
+<li>Distributed real-time monitoring framework</li>
+<li>M3U8 tooling (HLS) and Transport Stream parser (ISO 13818-1)</li>
+<li>Full-stack Java web application development for "multimedia"
+department</li>
+<li>Miscellaneous SDLC improvements</li>
+</ul>
+<p><strong>Platform for natural language interfaces (a.k.a.
+bots)</strong>. A client and partner agnostic platform for creating
+natural language interfaces to MLBAM's existing services. Consists of
+the following parts: AWS Node.js and Python lambdas for the adapter
+layer for clients such as FaceBook Messenger, Slack, and Alexa; a
+Blue-Green deployment pipeline leveraging AWS ECS and docker containers,
+and Java 9 microservice containers built with Dagger2, Spark, Retrofit2,
+cukes-rest, junit/mockito, and lots of love and domain knowledge. These
+microservices are: an orchestration microservice to provide a consistent
+API for clients; a conversation understanding service integrating with
+wit.ai, and to hold conversational memory; a facade to integrate with
+the rest of BAM's backend service APIs; and a conversation analytics
+ledgering framework, backed by AWS' Firehose and S3 for anonymized
+analysis.</p>
+<p><strong>Key Encipherment System</strong>. A Java client that
+leverages AWS' DynamoDB and KMS services to provide a base level of
+protection for data at rest in an untrusted facility. In addition to
+providing a simple approach to storing encryption keys for our media,
+this project was also used as a real-world example for an internal talk
+underlining the value of designing multiple-region support into
+applications and services.</p>
+<p><strong>Distributed real-time monitoring framework</strong>. Some of
+the (snippet-sized) lessons learned on this project are available at <a
+href="http://yegeniy.github.io/archived-blog">http://yegeniy.github.io/archived-blog</a>.
+Independent contributor to a distributed real-time monitoring system
+that collects data from various sources and adapts the aggregate into
+meaningful views for clients. Core Java libraries, Jersey (JAX-RS) with
+embedded Grizzly Server, Jackson for JSON, providing simple REST HTTP
+API to internal modules and external consumers. Long-lived TCP Socket
+communication and Protobuf messaging proof-of-concepts implemented.
+Features a sprinkling of compile-time code generation via Annotation
+Processing to reduce the burden of repetitive boilerplate code. The
+modules generally run under Tanuki’s Java Service Wrapper, but a branch
+for deploying to servlet containers exists.</p>
+<p><strong>M3U8 tooling (HLS) and Transport Stream parser (ISO
+13818-1)</strong>. Built in "low-level" style Java, mainly to become
+familiar with the specifications; however, it has turned out useful
+enough as a personal debugging tool to solve questions from co-workers
+occasionally.</p>
+<p><strong>Full-stack Java web application development for "multimedia"
+department</strong>. Previous role was full-stack Java web application
+development for MLBAM and its partners as a member of the "multimedia
+development" (10 people) and "multimedia framework" (5 people) teams.
+Work includes development, design, and upgrades of most of the team’s
+applications; automating testing at unit, functional, integration, and
+load levels; writing and organizing documentation; and above all working
+with, learning from, and mentoring co-workers (teammates, sysadmins,
+DBAs, and members of other teams). Participate in technical phone
+screens and interviews of candidates when given the opportunity.</p>
+<p><strong>Miscellaneous Software Development Life Cycle
+improvements</strong>. Spend downtime, when helpful, on finding and
+automating away sources of friction in the development lifecycle; always
+making sure to document information for others within and outside the
+team. Examples range from: necessary one-offs such as setting up CentOS
+user acceptance and test environments; to long-term iterative
+improvements such as improving the deployment workflow as new tools
+become available internally (various AWS services, Blue-Green
+deployments, Jenkins, internal frameworks, RunDeck); to quick
+returns-on-investment such as facilitating conversations among people
+who should talk or automating away persistence-layer operational
+overhead with simple bash scripts (CouchBase, MySQL); to occasional
+long-shots such as demonstrating Docker containers, chat rooms, git, or
+BDD.</p>
+<hr />
+<h4
+id="software-engineer-backend-systems-with-openskycom-in-nyc-ny">Software
+Engineer (backend systems) with opensky.com in NYC, NY</h4>
+<p><em>2011 - 2013</em></p>
+<p>Acquired a broad exposure to web development technologies, invaluable
+startup insights, and met some amazing people.</p>
+<ul>
+<li>Primary Skills: Automated Testing (xUnit and Mockito), API
+development (HTTP and REST), Data Analysis (SQL, spreadsheets),
+Enterprise Integration Patterns, git, Java (Camel, Maven, HornetQ,
+IntelliJ IDEA, Mule ESB, Spring, etc.), Jenkins, JSON &amp; XML, Linux,
+Mongo, MySQL, PHP (symfony2), Puppet, SDLC, RPMs (yum, .spec), Text
+editing (Sublime Text 2, Markdown).</li>
+<li>Some Exposure To: BDD/QA/Selenium, E-Commerce, ETL, Interviewing
+candidates, Javascript, Python, Scala (Ivy and sbt), SOAP, XSD.</li>
+<li>Worked on team responsible for order lifecycle, third-party
+integrations, asynchronous multi-threaded needs, and coordinating flow
+of business-related data throughout the system; additionally, assisted
+with analytics, reconciliation, triage &amp; investigation for
+fulfillment and finance departments.</li>
+</ul>
+<h4
+id="software-intern-contractor-with-trace-foundation-in-nyc-ny">Software
+Intern, Contractor with Trace Foundation in NYC, NY</h4>
+<p><em>2010 - 2011</em></p>
+<ul>
+<li>Primary Skills: Java (Google Web Toolkit and other open-source
+libraries, Eclipse), Web Ontology Language.</li>
+<li>Designed, developed, and tested semantic repository for foundation
+storing multimedia digital information related to Tibetan culture.</li>
+</ul>
+<h2 id="personal">Personal</h2>
+<p>Raising a wonderful girl and boy! Early in my career, I implemented a
+personal GTD and Deep Work organization system variant to stay focused.
+Leveraged kimono labs and beautifulsoup4 to collect procyclingstats.com
+and espn.com data for academic research on teams. Learned bioinformatics
+by struggling through rosalind.info/problems; attended GenSpace’s
+Biohacker Boot Camp. One day, I'll finally pivot back into scientific
+programming. But in the meantime, I go on long walks, try to be handy
+around the house, and encourage friends who are learning programming and
+machine learning.</p>
+<p>My recent reading list has been focused on Deep Learning and
+Generative AI literature and content. Basically it's all side projects,
+online courses, and the 2025 AI Engineer Reading List these days. But
+back in my software engineering career, I was keeping a proper reading
+list: <em>Building Microservices</em>, <em>Smarter Faster Better</em>
+and <em>Clean Code</em>. The previous year: finished <em>Data and
+Goliath</em>, <em>The Inmates are Running the Asylum</em>, <em>The Power
+of Habit</em>, <em>Scala for the Impatient</em>, <em>How to Lie with
+Statistics</em>, <em>Liars and Outliers</em>, <em>Antifragile</em>,
+<em>Java Concurrency In Practice</em>, <em>Effective Java 2nd
+Edition</em>, <em>Magic of Thinking Big</em>; and I stopped reading
+<em>The House, in Which...</em> (Russian) and <em>The Well Grounded Java
+Developer</em>. The previous year: finished <em>Effective Java 2nd
+Edition</em>, <em>The Four Steps to the Epiphany</em>,
+<em>Principles</em> (by Ray Dalio), and <em>The Innovator’s
+Prescription</em>; and stopped reading <em>Clean Code</em>, <em>xUnit
+Test Patterns</em>, <em>Fundamentals of Biostatistics</em> (by Rosner),
+and <em>Pro Puppet</em>.</p>
+<p>Fluent in English and Russian, with basic proficiency in French.
+Taught high schoolers in an after school program called Russian School
+of Mathematics after work and on the weekends in 2017. Mentored children
+with Post Traumatic Stress Disorder as a Counselor for the Children of
+Sderot Camp in Israel in the Summer of 2009.</p>
+<p>Way back in college, revived and became the president of Brandeis
+Physics Club from Fall 2007 until Spring 2010. Fostered interest in the
+sciences through local community outreach. Led three small groups in
+design and building of project for the Bernstein Festival of the
+Creative Arts. Wrote proposals to receive club funding from various
+on-campus sources.</p>
+<p>Online Presence:</p>
+<ul>
+<li><a
+href="http://stackoverflow.com/users/2916086/yegeniy">http://stackoverflow.com/users/2916086/yegeniy</a></li>
+<li><a
+href="http://yegeniy.github.io/">http://yegeniy.github.io/</a></li>
+<li><a
+href="https://github.com/yegeniy">https://github.com/yegeniy</a></li>
+</ul>
+<h2 id="academic-experience">Academic Experience</h2>
+<p>Teaching Assistant for Professor Mitch Cherniack <em>Spring
+2011</em></p>
+<ul>
+<li>"Operating Systems" course.</li>
+<li>Oversaw programming assignments, and accompanying lectures for class
+of 43 students.</li>
+</ul>
+<p>Student Researcher in Professor Seth Fraden’s Complex Fluids Group
+<em>2007 - 2010</em></p>
+<ul>
+<li>Developed and built instrumentation for calculating interfacial
+tension from microliter drops.</li>
+<li>Automated laboratory equipment and the processing of large data sets
+(Labview &amp; Matlab).</li>
+<li>Performed image and data analysis automation on microfluidic chips
+holding 104 drops.</li>
+</ul>
+<p>Teaching Assistant for Professor Antonella DiLillo <em>Fall
+2008</em></p>
+<ul>
+<li>"Introduction to Programming in Java and C" course.</li>
+<li>Provided personal tutoring and held office hours.</li>
+</ul>
+<p>Help Desk in Library Technology Services <em>2007</em></p>
+<ul>
+<li>Provided multimedia and technical support to students and
+faculty.</li>
+</ul>
+<h2 id="education-1">Education</h2>
+<p>Biohacker Boot Camp. GenSpace. Brooklyn, NY <em>2015</em></p>
+<p><strong>Brandeis University</strong> Waltham, MA</p>
+<p>M.A. in Computer Science - <em>Spring 2011</em></p>
+<p>B.S. in Physics with High Honors, Computer Science, and Mathematics -
+<em>Spring 2010</em></p>
+<ul>
+<li>Thesis: "Interfacial Tension Measurements Using the Drop Profile
+Method"</li>
+<li>"Physics Faculty Prize", "Arnold Shapiro Prize in Mathematics",
+Dean’s List</li>
+</ul>
+</div>
+</body>
+</html>
